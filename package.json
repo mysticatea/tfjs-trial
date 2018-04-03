@@ -1,0 +1,45 @@
+{
+  "name": "tfjs-trial",
+  "version": "0.0.0",
+  "description": "",
+  "engines": {
+    "node": ">=8.10.0"
+  },
+  "main": "index.js",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@tensorflow/tfjs": "^0.6.1",
+    "@types/node": "^9.6.1",
+    "copy-webpack-plugin": "^4.5.1",
+    "eslint": "^4.19.1",
+    "eslint-config-mysticatea": "^13.0.2",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-prettier": "^2.6.0",
+    "prettier": "^1.11.1",
+    "ts-loader": "^4.1.0",
+    "typescript": "^2.8.1",
+    "typescript-eslint-parser": "^14.0.0",
+    "webpack": "^4.4.1",
+    "webpack-cli": "^2.0.13",
+    "webpack-serve": "^0.3.1"
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack-serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mysticatea/tfjs-trial.git"
+  },
+  "keywords": [],
+  "author": "Toru Nagashima (https://github.com/mysticatea)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mysticatea/tfjs-trial/issues"
+  },
+  "homepage": "https://github.com/mysticatea/tfjs-trial#readme"
+}

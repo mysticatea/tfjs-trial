@@ -1,0 +1,79 @@
+root: true
+
+extends:
+  - mysticatea
+  - plugin:prettier/recommended
+rules:
+  require-jsdoc: off
+  mysticatea/arrow-parens: off
+
+overrides:
+  - files: ["*.js"]
+    parserOptions:
+      sourceType: script
+      ecmaVersion: 2017
+      ecmaFeatures:
+        globalReturn: true
+    plugins:
+      - node
+    globals:
+      __dirname: false
+      __filename: false
+      clearImmediate: false
+      exports: false
+      module: false
+      process: false
+      require: false
+      setImmediate: false
+    rules:
+      node/exports-style:
+        - error
+        - module.exports
+      node/no-deprecated-api: error
+      node/no-extraneous-require: error
+      node/no-missing-require: error
+      node/no-unpublished-bin: error
+      node/no-unpublished-require: error
+      node/no-unsupported-features: error
+      node/process-exit-as-throw: error
+      node/shebang: error
+      prettier/prettier:
+        - error
+        - tabWidth: 4
+          semi: false
+          trailingComma: all
+
+  - files: ["*.ts"]
+    parser: typescript-eslint-parser
+    parserOptions:
+      sourceType: module
+      ecmaVersion: 2017
+    plugins:
+      - import
+      - node
+    rules:
+      lines-between-class-members: off
+      no-invalid-this: off
+      no-loop-func: off
+      no-undef: off
+      no-unused-vars: off
+      no-use-before-define: off
+      valid-jsdoc: off
+      import/default: error
+      import/exports-last: error
+      import/first: error
+      import/named: error
+      import/newline-after-import: error
+      import/no-absolute-path: error
+      node/no-extraneous-import: error
+      node/no-missing-import: error
+      node/no-unpublished-import: error
+      prettier/prettier:
+        - error
+        - tabWidth: 4
+          semi: false
+          trailingComma: all
+          parser: typescript
+    settings:
+      node:
+        tryExtensions: [".ts"]

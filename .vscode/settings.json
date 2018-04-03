@@ -1,0 +1,8 @@
+{
+    "eslint.validate": [
+        "javascript",
+        {"autoFix": true, "language": "typescript"},
+        {"autoFix": true, "language": "vue"}
+    ],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
+}

@@ -11,24 +11,31 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "@tensorflow/tfjs": "^0.6.1",
+    "@tensorflow/tfjs": "^0.7.0",
     "@types/node": "^9.6.1",
     "copy-webpack-plugin": "^4.5.1",
+    "css-loader": "^0.28.11",
     "eslint": "^4.19.1",
     "eslint-config-mysticatea": "^13.0.2",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-prettier": "^2.6.0",
+    "eslint-plugin-vue": "^4.4.0",
+    "file-loader": "^1.1.11",
     "prettier": "^1.11.1",
+    "style-loader": "^0.20.3",
     "ts-loader": "^4.1.0",
     "typescript": "^2.8.1",
     "typescript-eslint-parser": "^14.0.0",
+    "vue": "^2.5.16",
+    "vue-eslint-parser": "^2.0.3",
+    "vue-loader": "^15.0.0-beta.7",
+    "vue-template-compiler": "^2.5.16",
     "webpack": "^4.4.1",
     "webpack-cli": "^2.0.13",
     "webpack-serve": "^0.3.1"
   },
   "scripts": {
     "build": "webpack --mode production",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "webpack-serve"
   },
   "repository": {

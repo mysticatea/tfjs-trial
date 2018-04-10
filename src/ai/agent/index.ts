@@ -73,7 +73,7 @@ export class Agent<TState extends GameState> implements Player<TState> {
         if (this.onAct) {
             const dataSize = this.model.inputSize
             const data = new Float32Array(dataSize)
-            state.getStateData(data, 0)
+            state.getStateData(data)
             this.onAct({
                 state: data,
                 action,
@@ -94,12 +94,14 @@ export class Agent<TState extends GameState> implements Player<TState> {
 
         // Read state
         const unitSize = this.model.inputSize
-        const state = new Float32Array(leaves.length * unitSize)
+        const buffer = new ArrayBuffer(4 * unitSize * leaves.length)
         for (let i = 0; i < leaves.length; ++i) {
-            leaves[i].leaf.state.getStateData(state, i * unitSize)
+            const state = new Float32Array(buffer, 4 * i * unitSize, unitSize)
+            leaves[i].leaf.state.getStateData(state)
         }
 
         // Predict on batch
+        const state = new Float32Array(buffer, 0, unitSize * leaves.length)
         const result = await this.model.predict(state, leaves.length)
         for (let i = 0; i < leaves.length; ++i) {
             const { leaf, route } = leaves[i]

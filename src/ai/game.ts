@@ -12,7 +12,7 @@ export interface GameState {
     readonly actions: ReadonlyArray<number>
     readonly winner?: PlayerTurn
 
-    getStateData(outData: Float32Array, outStartIndex: number): void
+    getStateData(outData: Float32Array): void
 }
 
 export interface Player<TState extends GameState> {

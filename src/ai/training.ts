@@ -1,4 +1,4 @@
-import { Agent } from "./agent"
+import { Agent, EvaluationModel } from "./agent"
 import { GameState, GameRule, PlayerTurn } from "./game"
 import { Match } from "./match"
 import { sample } from "./util"
@@ -31,7 +31,7 @@ export class Training<TState extends GameState> {
         initialSerializedModel?: string,
     ): Promise<Training.Result<TState>> {
         const match = new Match(this.rule)
-        const history = [] as Agent.ActionInfo[]
+        const history = [] as EvaluationModel.TrainingData[]
         let bestPlayer = Agent.new({
             rule: this.rule,
             serializedModel: initialSerializedModel,
@@ -53,16 +53,28 @@ export class Training<TState extends GameState> {
             for (let i = 0; i < this.episodes; ++i) {
                 console.log("Play %d.", i)
                 const odd = Boolean(i & 0x01)
+                const myTurn = odd ? PlayerTurn.White : PlayerTurn.Black
                 const result = await match.play(
                     odd ? bestPlayer : currentPlayer,
                     odd ? currentPlayer : bestPlayer,
                 )
-                const myTurn = odd ? PlayerTurn.White : PlayerTurn.Black
 
+                // Make the result value.
+                const [w, y, x] = this.rule.stateSize
+                const resultStateData = new Float32Array(w * y * x)
+                result.getStateData(resultStateData)
+                history.push({
+                    state: resultStateData,
+                    value: result.winner === myTurn ? 1 : -1,
+                    policy: new Float32Array(this.rule.actionSize),
+                })
+
+                // To check score.
                 if (result.winner === myTurn) {
                     win += 1
                 }
 
+                // Reset players' state.
                 bestPlayer = Agent.inherit(bestPlayer)
                 currentPlayer = Agent.inherit(currentPlayer)
             }

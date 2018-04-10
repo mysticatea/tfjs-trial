@@ -76,7 +76,7 @@ export class GomokuState implements GameState {
         this.actions = winner !== 0 ? [] : toAllowedActions(board)
     }
 
-    getStateData(outData: Float32Array, outStartIndex: number): void {
+    getStateData(outData: Float32Array): void {
         const myTurn = this.playerTurn
         const otherTurn =
             myTurn === PlayerTurn.Black ? PlayerTurn.White : PlayerTurn.Black
@@ -85,10 +85,10 @@ export class GomokuState implements GameState {
         for (let i = 0; i < board.length; ++i) {
             switch (board[i]) {
                 case myTurn:
-                    outData[outStartIndex + i] = 1
+                    outData[i] = 1
                     break
                 case otherTurn:
-                    outData[outStartIndex + ROWS * COLS + i] = 1
+                    outData[ROWS * COLS + i] = 1
                     break
 
                 // no default

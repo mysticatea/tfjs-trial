@@ -1,6 +1,7 @@
 import { Agent } from "./agent"
 import { GameState, GameRule, PlayerTurn } from "./game"
 import { Match } from "./match"
+import { sample } from "./util"
 
 export class Training<TState extends GameState> {
     private rule: GameRule<TState>
@@ -101,17 +102,4 @@ export namespace Training {
     export interface Result<TState extends GameState> {
         finalSerializedModel: string
     }
-}
-
-function sample<T>(array: T[], count: number): T[] {
-    const result = array.slice(0)
-
-    for (let i = result.length - 1; i > 0; --i) {
-        const j = (Math.random() * (i + 1)) | 0
-        const temp = result[i]
-        result[i] = result[j]
-        result[j] = temp
-    }
-
-    return result.slice(0, count)
 }

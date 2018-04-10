@@ -1,4 +1,5 @@
 import { GameState, GameRule } from "../game"
+import { sample } from "../util"
 
 const Cpuct = 5
 
@@ -69,17 +70,13 @@ export class MonteCarloTree<TState extends GameState> {
         }
     }
 
-    getLeaf(): MonteCarloTree.LeafInfo<TState> {
-        let leaf = this.root
-        const route = [] as MonteCarloTree.Edge<TState>[]
-
-        while (leaf.edges.length !== 0) {
-            const edge = chooseEdge(leaf, this.root)
-            leaf = edge.outNode
-            route.push(edge)
+    getLeaves(count: number = 1): MonteCarloTree.LeafInfo<TState>[] {
+        if (this.root.edges.length === 0) {
+            return [{ leaf: this.root, route: [] }]
         }
-
-        return { leaf, route }
+        return sample(this.root.edges, count)
+            .map(getLeaf)
+            .filter(uniqueLeaf, new Set<string>())
     }
 
     makeNextNodes(
@@ -133,7 +130,7 @@ export namespace MonteCarloTree {
         readonly inNode: Node<TState>
         readonly outNode: Node<TState>
         readonly action: number
-        readonly p: number
+        readonly prior: number
         n: number = 0
         w: number = 0
         q: number = 0
@@ -147,7 +144,7 @@ export namespace MonteCarloTree {
             this.inNode = inNode
             this.outNode = outNode
             this.action = action
-            this.p = prior
+            this.prior = prior
         }
     }
 
@@ -157,29 +154,34 @@ export namespace MonteCarloTree {
     }
 }
 
-function chooseEdge<TState extends GameState>(
-    node: MonteCarloTree.Node<TState>,
-    rootNode: MonteCarloTree.Node<TState>,
-): MonteCarloTree.Edge<TState> {
-    switch (node.edges.length) {
-        case 0:
-            throw new Error("chooseEdge on a leaf.")
-        case 1:
-            return node.edges[0]
-        default:
-            return node === rootNode
-                ? chooseRootEdge(node)
-                : chooseRestEdge(node)
+function getLeaf<TState extends GameState>(
+    firstEdge: MonteCarloTree.Edge<TState>,
+): MonteCarloTree.LeafInfo<TState> {
+    let leaf = firstEdge.outNode
+    const route = [firstEdge]
+
+    while (leaf.edges.length !== 0) {
+        const edge = chooseEdge(leaf)
+        leaf = edge.outNode
+        route.push(edge)
     }
+
+    return { leaf, route }
 }
 
-function chooseRootEdge<TState extends GameState>(
-    node: MonteCarloTree.Node<TState>,
-): MonteCarloTree.Edge<TState> {
-    return node.edges[(Math.random() * node.edges.length) | 0]
+function uniqueLeaf<TState extends GameState>(
+    this: Set<string>,
+    { leaf }: MonteCarloTree.LeafInfo<TState>,
+): boolean {
+    const id = leaf.state.id
+    if (this.has(id)) {
+        return false
+    }
+    this.add(id)
+    return true
 }
 
-function chooseRestEdge<TState extends GameState>(
+function chooseEdge<TState extends GameState>(
     node: MonteCarloTree.Node<TState>,
 ): MonteCarloTree.Edge<TState> {
     const nb = Math.sqrt(node.edges.reduce(sumN, 0))
@@ -187,11 +189,12 @@ function chooseRestEdge<TState extends GameState>(
     let maxEdge: MonteCarloTree.Edge<TState>
 
     for (const edge of node.edges) {
-        const { n, q, p } = edge
-        const u = Cpuct * p * nb / (1 + n)
+        const { n, q, prior } = edge
+        const u = Cpuct * prior * nb / (1 + n)
+        const qu = q + u
 
-        if (q + u > maxQU) {
-            maxQU = q + u
+        if (qu > maxQU) {
+            maxQU = qu
             maxEdge = edge
         }
     }

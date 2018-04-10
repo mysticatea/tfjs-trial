@@ -87,43 +87,22 @@ export class Agent<TState extends GameState> implements Player<TState> {
 
     private async simulate(): Promise<void> {
         const mcts = this.mcts!
-        const queue = [] as MonteCarloTree.LeafInfo<TState>[]
-        const ids = new Set<string>()
-        let skipped = 0
-
-        // Collect leaf nodes.
-        while (queue.length < SimBatchSize && skipped < 4) {
-            const info = mcts.getLeaf()
-            const id = info.leaf.state.id
-
-            if (ids.has(id)) {
-                skipped += 1
-                continue
-            }
-            ids.add(id)
-
-            if (info.leaf.done) {
-                backFill(info.leaf, info.route)
-                continue
-            }
-
-            queue.push(info)
-        }
-        if (queue.length === 0) {
+        const leaves = mcts.getLeaves(SimBatchSize)
+        if (leaves.length === 0) {
             return
         }
 
         // Read state
         const unitSize = this.model.inputSize
-        const state = new Float32Array(queue.length * unitSize)
-        for (let i = 0; i < queue.length; ++i) {
-            queue[i].leaf.state.getStateData(state, i * unitSize)
+        const state = new Float32Array(leaves.length * unitSize)
+        for (let i = 0; i < leaves.length; ++i) {
+            leaves[i].leaf.state.getStateData(state, i * unitSize)
         }
 
         // Predict on batch
-        const result = await this.model.predict(state, queue.length)
-        for (let i = 0; i < queue.length; ++i) {
-            const { leaf, route } = queue[i]
+        const result = await this.model.predict(state, leaves.length)
+        for (let i = 0; i < leaves.length; ++i) {
+            const { leaf, route } = leaves[i]
             const { value, policy } = result[i]
             const actions = leaf.state.actions
             const probs = new Array(actions.length)

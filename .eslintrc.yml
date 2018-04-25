@@ -2,9 +2,9 @@ root: true
 
 extends:
   - mysticatea
-  - mysticatea/browser
   - plugin:prettier/recommended
 rules:
+  no-debugger: off
   require-jsdoc: off
   mysticatea/arrow-parens: off
 
@@ -42,7 +42,7 @@ overrides:
         - error
         - tabWidth: 4
           semi: false
-          trailingComma: all
+          trailingComma: es5
 
   - files: ["*.ts"]
     parser: typescript-eslint-parser
@@ -90,6 +90,9 @@ overrides:
       - import
       - node
       - vue
+    globals:
+      window: false
+      requestAnimationFrame: false
     rules:
       import/default: error
       import/first: error
@@ -156,4 +159,4 @@ overrides:
           trailingComma: all
     settings:
       node:
-        tryExtensions: [".vue", ".ts", ".js"]
+        tryExtensions: [".vue", ".js"]

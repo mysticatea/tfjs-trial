@@ -1,19 +1,20 @@
-import { GameState, GameRule, PlayerTurn } from "../../ai"
+import { GameRule } from "../ai"
+import { GomokuState } from "./game-state"
 
 const ROWS = 9
 const COLS = 9
 const THRESHOLD = 5
 const stateMap = new Map<string, GomokuState>()
-const initialBoard = Object.freeze(new Array(ROWS * COLS).fill(0))
+const initialBoard = Object.freeze(new Array(ROWS * COLS).fill(-1))
 
 export class GomokuRule implements GameRule<GomokuState> {
     stateSize = [2, ROWS, COLS] as [number, number, number]
     actionSize = COLS * ROWS
     initialState = new GomokuState(
         toId(initialBoard),
-        PlayerTurn.Black,
         0,
-        new Array(ROWS * COLS).fill(0),
+        -1,
+        new Array(ROWS * COLS).fill(-1),
         toAllowedActions(initialBoard),
     )
     rows = ROWS
@@ -21,7 +22,7 @@ export class GomokuRule implements GameRule<GomokuState> {
 
     //eslint-disable-next-line class-methods-use-this
     takeAction(state: GomokuState, action: number): GomokuState {
-        if (state.board[action] !== 0) {
+        if (state.board[action] !== -1) {
             throw new Error("Invalid action")
         }
 
@@ -30,14 +31,11 @@ export class GomokuRule implements GameRule<GomokuState> {
             return stateMap.get(id)!
         }
 
-        const playerTurn =
-            state.playerTurn === PlayerTurn.Black
-                ? PlayerTurn.White
-                : PlayerTurn.Black
+        const playerTurn = state.playerTurn ^ 0x01
         const board = state.board.slice(0)
         board[action] = state.playerTurn
-        const winner = checkWin(board, action) ? state.playerTurn : 0
-        const actions = winner !== 0 ? [] : toAllowedActions(board)
+        const winner = checkWin(board, action) ? state.playerTurn : -1
+        const actions = winner !== -1 ? [] : toAllowedActions(board)
         const nextState = new GomokuState(
             id,
             playerTurn,
@@ -51,54 +49,6 @@ export class GomokuRule implements GameRule<GomokuState> {
     }
 }
 
-export class GomokuState implements GameState {
-    readonly id: string
-    readonly playerTurn: PlayerTurn
-    readonly winner: PlayerTurn | 0
-    readonly board: ReadonlyArray<number>
-    readonly actions: ReadonlyArray<number>
-
-    constructor(
-        id: string,
-        playerTurn: PlayerTurn,
-        winner: PlayerTurn | 0,
-        board: ReadonlyArray<number>,
-        actions: ReadonlyArray<number>,
-    ) {
-        if (board.length !== ROWS * COLS) {
-            throw new Error("invalid board")
-        }
-
-        this.id = id
-        this.playerTurn = playerTurn
-        this.winner = winner
-        this.board = board
-        this.actions = winner !== 0 ? [] : toAllowedActions(board)
-    }
-
-    getStateData(outData: Float32Array): void {
-        const myTurn = this.playerTurn
-        const otherTurn =
-            myTurn === PlayerTurn.Black ? PlayerTurn.White : PlayerTurn.Black
-        const board = this.board
-
-        for (let i = 0; i < board.length; ++i) {
-            switch (board[i]) {
-                case myTurn:
-                    outData[i] = 1
-                    break
-                case otherTurn:
-                    outData[ROWS * COLS + i] = 1
-                    break
-
-                // no default
-            }
-        }
-    }
-}
-
-export const gomoku = Object.freeze(new GomokuRule())
-
 function toId(board: ReadonlyArray<number>): string {
     let s = ""
     for (let i = 0; i < board.length; i += 2) {
@@ -110,7 +60,7 @@ function toId(board: ReadonlyArray<number>): string {
     return s
 }
 
-function nextId(id: string, turn: PlayerTurn, action: number): string {
+function nextId(id: string, turn: number, action: number): string {
     const i = (action / 2) | 0
     const value = parseInt(id[i], 16)
     const n0 = action & 1 ? (value >> 2) & 0x03 : turn & 0x03
@@ -123,7 +73,7 @@ function nextId(id: string, turn: PlayerTurn, action: number): string {
 function toAllowedActions(board: ReadonlyArray<number>): number[] {
     const actions = []
     for (let i = 0; i < board.length; ++i) {
-        if (board[i] === 0) {
+        if (board[i] === -1) {
             actions.push(i)
         }
     }

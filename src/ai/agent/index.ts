@@ -11,41 +11,20 @@ export class Agent<TState extends GameState> implements Player<TState> {
     private maxThinkingTime: Agent.Restriction
     private onAct: ((info: Agent.ActionInfo) => void) | undefined
 
-    static new<TState extends GameState>({
+    constructor({
         rule,
         serializedModel,
-        maxThinkingTime = { type: "count", value: 16 },
+        maxThinkingTime = { type: "count", value: 10 },
         onAct,
-    }: Agent.Config<TState>): Agent<TState> {
-        return new Agent<TState>(
-            rule,
-            new EvaluationModel(rule, serializedModel),
-            maxThinkingTime,
-            onAct,
-        )
-    }
-
-    static inherit<TState extends GameState>(
-        originalAgent: Agent<TState>,
-    ): Agent<TState> {
-        return new Agent<TState>(
-            originalAgent.mcts.rule,
-            originalAgent.model,
-            originalAgent.maxThinkingTime,
-            originalAgent.onAct,
-        )
-    }
-
-    constructor(
-        rule: GameRule<TState>,
-        model: EvaluationModel,
-        maxThinkingTime: Agent.Restriction,
-        onAct: ((info: Agent.ActionInfo) => void) | undefined,
-    ) {
-        this.model = model
+    }: Agent.Config<TState>) {
+        this.model = new EvaluationModel(rule, serializedModel)
         this.mcts = new MonteCarloTree(rule)
         this.maxThinkingTime = maxThinkingTime
         this.onAct = onAct
+    }
+
+    reset(): void {
+        this.mcts = new MonteCarloTree(this.mcts.rule)
     }
 
     async act(state: TState): Promise<TState> {
@@ -106,18 +85,22 @@ export class Agent<TState extends GameState> implements Player<TState> {
         for (let i = 0; i < leaves.length; ++i) {
             const { leaf, route } = leaves[i]
             const { value, policy } = result[i]
-            const actions = leaf.state.actions
-            const probs = new Array(actions.length)
 
-            let sum = 0
-            for (let j = 0; j < probs.length; ++j) {
-                sum += probs[j] = Math.exp(policy[actions[j]])
-            }
-            for (let j = 0; j < probs.length; ++j) {
-                probs[j] /= sum
+            // leaf.done can be true if the leaf is a game end.
+            if (!leaf.done) {
+                const actions = leaf.state.actions
+                const probs = new Array(actions.length)
+
+                let sum = 0
+                for (let j = 0; j < probs.length; ++j) {
+                    sum += probs[j] = Math.exp(policy[actions[j]])
+                }
+                for (let j = 0; j < probs.length; ++j) {
+                    probs[j] /= sum
+                }
+                mcts.makeNextNodes(leaf, value, probs)
             }
 
-            mcts.makeNextNodes(leaf, value, probs)
             backFill(leaf, route)
         }
     }

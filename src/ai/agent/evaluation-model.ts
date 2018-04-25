@@ -1,7 +1,4 @@
 import * as tf from "@tensorflow/tfjs"
-// TODO(mysticatea): tf.models.modelFromJSON が何故か公開されていないため、無理矢理取得する。
-//eslint-disable-next-line node/no-extraneous-import
-import { modelFromJSON } from "@tensorflow/tfjs-layers/dist/models"
 
 const RegularizerRate = 0.0001
 const CnnFilters = 64
@@ -10,16 +7,21 @@ const NumResidualLayers = 4
 
 export class EvaluationModel {
     private dimension: EvaluationModel.Dimension
-    private model: Promise<tf.Model>
+    private model: tf.Model
 
     constructor(
         dimension: EvaluationModel.Dimension,
         serializedString?: string,
     ) {
         this.dimension = dimension
-        this.model = serializedString
-            ? modelFromJSON(JSON.parse(serializedString))
-            : Promise.resolve(defineModel(dimension))
+        this.model = defineModel(dimension)
+
+        if (serializedString) {
+            const weights = JSON.parse(serializedString).weights.map((w: any) =>
+                tf.tensor(w.values, w.shape, w.dtype),
+            )
+            this.model.setWeights(weights)
+        }
     }
 
     get inputSize(): number {
@@ -31,14 +33,13 @@ export class EvaluationModel {
         state: Float32Array,
         batchSize: number,
     ): Promise<EvaluationModel.PredictResult[]> {
-        const model = await this.model
         const [valueTensor, policyTensor] = tf.tidy(() => {
             const input = tf.tensor4d(
                 state,
                 [batchSize, ...this.dimension.stateSize] as any,
                 "float32",
             )
-            const output = model.predictOnBatch(input) as tf.Tensor[]
+            const output = this.model.predictOnBatch(input) as tf.Tensor[]
             return output
         })
         const valueArray = (await valueTensor.data()) as Float32Array
@@ -62,9 +63,10 @@ export class EvaluationModel {
         return result
     }
 
-    async fit(trainingData: EvaluationModel.TrainingData[]): Promise<void> {
+    async fit(
+        trainingData: EvaluationModel.TrainingData[],
+    ): ReturnType<tf.Model["fit"]> {
         const dim = this.dimension
-        const model = await this.model
         let state: tf.Tensor | undefined
         let value: tf.Tensor | undefined
         let policy: tf.Tensor | undefined
@@ -85,7 +87,7 @@ export class EvaluationModel {
                 "float32",
             )
 
-            await model.fit(state, [value, policy])
+            return await this.model.fit(state, [value, policy])
         } finally {
             if (state) {
                 state.dispose()
@@ -99,19 +101,16 @@ export class EvaluationModel {
         }
     }
 
-    async serialize(): Promise<string> {
-        const model = await this.model
-        return model.toJSON()
-    }
-
-    async getWeights(): Promise<tf.Tensor[]> {
-        const model = await this.model
-        return model.getWeights()
-    }
-
-    async setWeights(weights: tf.Tensor[]): Promise<void> {
-        const model = await this.model
-        model.setWeights(weights)
+    serialize(): string {
+        return tf.tidy(() => {
+            const weights = this.model.getWeights().map(w => {
+                const values = Array.from(w.dataSync())
+                const shape = w.shape
+                const dtype = w.dtype
+                return { values, shape, dtype }
+            })
+            return JSON.stringify({ weights })
+        })
     }
 }
 
@@ -164,7 +163,7 @@ function defineModel({
         optimizer: "sgd",
         loss: ["meanSquaredError", "meanSquaredError"],
     })
-    model.lossFunctions[1] = softmaxCrossEntropy
+    model.lossFunctions[1] = tf.losses.softmaxCrossEntropy
 
     return model
 }
@@ -265,16 +264,6 @@ function sequence(
     ...layers: Layer[]
 ): IntermediateTensor {
     return layers.reduce((x, layer) => layer.apply(x), input)
-}
-
-const softmaxCrossEntropy: tf.Model["lossFunctions"][0] = (yTrue, yPred) => {
-    const p = tf.where(
-        tf.equal(yTrue, tf.zeros(yTrue.shape)),
-        tf.fill(yTrue.shape, -100),
-        yPred,
-    )
-
-    return tf.losses.softmaxCrossEntropy(yTrue, p)
 }
 
 function concatFloat32Array(

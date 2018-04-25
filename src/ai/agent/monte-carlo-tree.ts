@@ -85,9 +85,11 @@ export class MonteCarloTree<TState extends GameState> {
         probs: number[],
     ): void {
         if (node.done === true) {
+            debugger
             throw new Error("duplicate makeNextNodes() call.")
         }
         if (probs.length !== node.state.actions.length) {
+            debugger
             throw new Error("probs.length must be same as actions.length")
         }
 
@@ -114,7 +116,6 @@ export class MonteCarloTree<TState extends GameState> {
 }
 
 export namespace MonteCarloTree {
-    //eslint-disable-next-line no-shadow
     export class Node<TState extends GameState> {
         readonly state: TState
         readonly edges: Edge<TState>[] = []

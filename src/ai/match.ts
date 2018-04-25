@@ -7,33 +7,40 @@ export class Match<TState extends GameState> {
         this.rule = rule
     }
 
-    async play(
-        black: Player<TState>,
-        white: Player<TState>,
-        observer?: Match.Observer<TState>,
-    ): Promise<TState> {
+    async play({
+        players,
+        signal,
+        onThinkStart,
+        onThinkEnd,
+        onUpdate,
+    }: Match.Config<TState>): Promise<TState> {
         let currentState = this.rule.initialState
-        let currentPlayer = black
+        let currentPlayer = players[currentState.playerTurn]
 
-        if (observer && observer.onUpdate) {
-            await observer.onUpdate(currentState)
+        if (onUpdate) {
+            await onUpdate(currentState)
+            checkAborted(signal)
         }
 
         do {
-            if (observer && observer.onThinkStart) {
-                await observer.onThinkStart(currentState, currentPlayer)
+            if (onThinkStart) {
+                await onThinkStart(currentState, currentPlayer)
+                checkAborted(signal)
             }
 
             currentState = await currentPlayer.act(currentState)
+            checkAborted(signal)
 
-            if (observer && observer.onThinkEnd) {
-                await observer.onThinkEnd(currentState, currentPlayer)
+            if (onThinkEnd) {
+                await onThinkEnd(currentState, currentPlayer)
+                checkAborted(signal)
             }
-            if (observer && observer.onUpdate) {
-                await observer.onUpdate(currentState)
+            if (onUpdate) {
+                await onUpdate(currentState)
+                checkAborted(signal)
             }
 
-            currentPlayer = currentPlayer === black ? white : black
+            currentPlayer = players[currentState.playerTurn]
         } while (currentState.actions.length > 0)
 
         return currentState
@@ -41,9 +48,17 @@ export class Match<TState extends GameState> {
 }
 
 export namespace Match {
-    export interface Observer<TState extends GameState> {
+    export interface Config<TState extends GameState> {
+        players: ReadonlyArray<Player<TState>>
+        signal?: AbortSignal
         onThinkStart?: (state: TState, player: Player<TState>) => any
         onThinkEnd?: (state: TState, player: Player<TState>) => any
         onUpdate?: (state: TState) => any
+    }
+}
+
+function checkAborted(signal: AbortSignal | undefined): void {
+    if (signal && signal.aborted) {
+        throw new Error("aborted")
     }
 }

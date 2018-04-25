@@ -6,9 +6,8 @@
         "allowUnreachableCode": false,
         "allowUnusedLabels": false,
         "alwaysStrict": true,
-        "baseUrl": ".",
         "checkJs": false,
-        "declaration": false,
+        "declaration": true,
         "diagnostics": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
@@ -27,13 +26,13 @@
         "noImplicitThis": true,
         "noUnusedLocals": true,
         "noUnusedParameters": false,
-        "outDir": "dist",
+        "outDir": "pages/.vuepress/components/lib",
         "pretty": true,
         "removeComments": true,
         "sourceMap": true,
         "sourceRoot": "src",
         "strictNullChecks": true,
-        "target": "es2015"
+        "target": "es2018"
     },
     "include": [
         "src/**/*.ts"

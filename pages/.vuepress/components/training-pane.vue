@@ -1,6 +1,6 @@
 <template>
-    <div class="gomoku-training-root">
-        <div class="gomoku-training-settings">
+    <div class="training-pane-root">
+        <div class="training-pane-settings">
             <button v-if="!isExecuting" @click="train">▶️ 開始する</button>
             <button v-else @click="abort">❌ 中止する</button>
             (
@@ -9,8 +9,8 @@
             <label>更新処理回数 <input v-model="trainingLoops" :disabled="isExecuting" type="number"></label>
             )
         </div>
-        <ol ref="container" class="gomoku-training-log-container">
-            <li v-for="({type, message}, i) of messages" :key="i" :class="`gomoku-training-log-${type}`">
+        <ol ref="container" class="training-pane-log-container">
+            <li v-for="({type, message}, i) of messages" :key="i" :class="`training-pane-log-${type}`">
                 {{ message }}
             </li>
         </ol>
@@ -21,15 +21,20 @@
 import Vue from "vue"
 import { AbortController } from "abort-controller"
 import { Training } from "./lib/ai"
-import { gomoku, models } from "./lib/gomoku"
 import { waitForDraw } from "./lib/utils"
 
-const gomokuTraining = new Training(gomoku)
-
 export default {
+    name: "TrainingPane",
+
+    props: {
+        rule: {
+            type: Object,
+            required: true,
+        },
+    },
+
     data() {
         return {
-            models,
             messages: [],
             playingLoops: 30,
             trainingLoops: 30,
@@ -38,8 +43,6 @@ export default {
             abortController: null,
         }
     },
-
-    computed: {},
 
     beforeDestroy() {
         this.abort()
@@ -51,7 +54,8 @@ export default {
             this.abortController = new AbortController()
             try {
                 this.log("info", "強化学習を開始しました。")
-                const result = await gomokuTraining.train({
+                const training = new Training(this.rule)
+                const result = await training.train({
                     playingLoops: Number(this.playingLoops) || 30,
                     trainingLoops: Number(this.trainingLoops) || 30,
                     maxThinkingTime: {
@@ -152,27 +156,27 @@ export default {
 </script>
 
 <style>
-.gomoku-training-root {
+.training-pane-root {
     padding: 16px;
     border: 1px inset gray;
     border-radius: 3px;
     background: #eee;
 }
 
-.gomoku-training-settings > label {
+.training-pane-settings > label {
     display: inline-block;
 }
-.gomoku-training-settings > label > input {
+.training-pane-settings > label > input {
     width: 4em;
     text-align: right;
 }
-.gomoku-training-settings > label:not(:last-child)::after {
+.training-pane-settings > label:not(:last-child)::after {
     display: inline-block;
     content: "|";
     padding: 0 0.5em;
 }
 
-.gomoku-training-log-container {
+.training-pane-log-container {
     list-style: none;
     margin: 0;
     margin-top: 16px;
@@ -184,20 +188,20 @@ export default {
     border-radius: 3px;
     background: white;
 }
-.gomoku-training-log-container > li {
+.training-pane-log-container > li {
     padding: 4px;
     font-size: 0.8em;
     font-family: monospace;
     word-wrap: break-word;
 }
-.gomoku-training-log-container > li:not(:first-child) {
+.training-pane-log-container > li:not(:first-child) {
     border-top: 1px dotted gray;
 }
 
-.gomoku-training-log-trace {
+.training-pane-log-trace {
     color: #9e9e9e;
 }
-.gomoku-training-log-trace::before {
+.training-pane-log-trace::before {
     display: inline-block;
     content: "ログ";
     width: 45px;
@@ -207,10 +211,10 @@ export default {
     background: #fafafa;
     text-align: center;
 }
-.gomoku-training-log-info {
+.training-pane-log-info {
     color: #000;
 }
-.gomoku-training-log-info::before {
+.training-pane-log-info::before {
     display: inline-block;
     content: "情報";
     width: 45px;
@@ -220,10 +224,10 @@ export default {
     background: #e3f2fd;
     text-align: center;
 }
-.gomoku-training-log-warn {
+.training-pane-log-warn {
     color: #000;
 }
-.gomoku-training-log-warn::before {
+.training-pane-log-warn::before {
     display: inline-block;
     content: "警告";
     width: 45px;
@@ -233,10 +237,10 @@ export default {
     background: #fff3e0;
     text-align: center;
 }
-.gomoku-training-log-error {
+.training-pane-log-error {
     color: #f44336;
 }
-.gomoku-training-log-error::before {
+.training-pane-log-error::before {
     display: inline-block;
     content: "エラー";
     width: 45px;

@@ -155,13 +155,13 @@ export default {
         },
 
         stoneClass(x, y) {
-            const { board, focus } = this
             const index = this.index(x, y)
-            const focused = focus === index
+            const focused = this.focus === index
+            const color = focused ? this.playerTurn : this.board[index]
             return {
                 "go-board-stone": true,
-                "go-board-stone-black": board[index] === 0 || focused,
-                "go-board-stone-white": board[index] === 1 || focused,
+                "go-board-stone-black": color === 0,
+                "go-board-stone-white": color === 1,
                 "go-board-stone-focus": focused,
             }
         },

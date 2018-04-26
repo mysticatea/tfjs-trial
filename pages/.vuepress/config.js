@@ -1,19 +1,29 @@
 "use strict"
 
+const markdownItKatex = require("@iktakahiro/markdown-it-katex")
+
 module.exports = {
     base: "/tfjs-trial/",
     title: "AlphaZero Clone",
+    description: "AlphaZero Clone powered by TensorFlow.js",
     locales: {
         "/": { lang: "ja-JP" },
     },
+    dest: "dist",
     serviceWorker: true,
+
+    markdown: {
+        config(md) {
+            md.use(markdownItKatex, { throwOnError: false })
+        },
+    },
 
     themeConfig: {
         docsDir: "pages",
         repo: "mysticatea/tfjs-trial",
         search: false,
         sidebar: [
-            ["/", "アルゴリズム解説"],
+            "/",
             {
                 title: "五目並べ",
                 children: [

@@ -1,4 +1,3 @@
-/src/vue.d.ts
+/dist
 /node_modules
 !/pages/.vuepress
-/pages/.vuepress/dist

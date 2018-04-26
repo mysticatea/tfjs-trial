@@ -159,4 +159,4 @@ overrides:
           trailingComma: all
     settings:
       node:
-        tryExtensions: [".vue", ".js"]
+        tryExtensions: [".vue", ".ts", ".js"]

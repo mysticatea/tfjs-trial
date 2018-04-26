@@ -26,15 +26,13 @@
         "noImplicitThis": true,
         "noUnusedLocals": true,
         "noUnusedParameters": false,
-        "outDir": "pages/.vuepress/components/lib",
         "pretty": true,
         "removeComments": true,
         "sourceMap": true,
-        "sourceRoot": "src",
         "strictNullChecks": true,
         "target": "es2018"
     },
     "include": [
-        "src/**/*.ts"
+        "./components/lib/**/*.ts"
     ]
 }

@@ -2,29 +2,27 @@
 
 module.exports = {
     base: "/tfjs-trial/",
-    title: "AlphaZero powered by TensorFlow.js",
+    title: "AlphaZero Clone",
     locales: {
-        "/": {
-            lang: "ja-JP",
-        },
+        "/": { lang: "ja-JP" },
     },
+    serviceWorker: true,
 
     themeConfig: {
-        nav: [
-            { text: "解説", link: "/" },
+        docsDir: "pages",
+        repo: "mysticatea/tfjs-trial",
+        search: false,
+        sidebar: [
+            ["/", "アルゴリズム解説"],
             {
-                text: "五目並べ",
-                items: [
-                    { text: "対戦", link: "/gomoku/play" },
-                    { text: "強化学習", link: "/gomoku/train" },
+                title: "五目並べ",
+                children: [
+                    ["/gomoku/play", "対戦"],
+                    ["/gomoku/selfplay", "自己対戦"],
+                    ["/gomoku/train", "強化学習"],
                 ],
             },
         ],
-        repo: "mysticatea/tfjs-trial",
-        search: false,
-        sidebar: {
-            "/gomoku/": [["play", "対戦"], ["train", "強化学習"]],
-        },
     },
 
     chainWebpack(config) {

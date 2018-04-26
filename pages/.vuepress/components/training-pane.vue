@@ -36,10 +36,10 @@ export default {
     data() {
         return {
             messages: [],
+            isExecuting: false,
             playingLoops: 30,
             trainingLoops: 30,
             depth: 10,
-            isExecuting: false,
             abortController: null,
         }
     },

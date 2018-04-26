@@ -1,3 +1,5 @@
 # 五目並べ
 
-<gomoku-playground/>
+ここでは学習済み AlphaZero と対戦できます。
+
+<gomoku-playground />

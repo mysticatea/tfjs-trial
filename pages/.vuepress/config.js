@@ -1,15 +1,17 @@
 "use strict"
 
 const markdownItKatex = require("@iktakahiro/markdown-it-katex")
+const GA = process.env.GA || undefined //eslint-disable-line no-process-env
 
 module.exports = {
+    dest: "dist",
     base: "/tfjs-trial/",
     title: "AlphaZero Clone",
     description: "AlphaZero Clone powered by TensorFlow.js",
     locales: {
         "/": { lang: "ja-JP" },
     },
-    dest: "dist",
+    ga: GA,
     serviceWorker: true,
 
     markdown: {

@@ -3,4 +3,4 @@ import { GomokuState } from "./game-state"
 
 export { GomokuRule, GomokuState }
 export const gomoku = Object.freeze(new GomokuRule())
-export const models = Object.freeze([])
+export const weights = Object.freeze([undefined])

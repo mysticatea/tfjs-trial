@@ -181,6 +181,7 @@ export default {
 .go-board-root {
     width: 100%;
     border: 1px outset gray;
+    border-radius: 6px;
     background: url(./wood.png) repeat;
 }
 

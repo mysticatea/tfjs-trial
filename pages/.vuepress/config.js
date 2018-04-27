@@ -23,18 +23,7 @@ module.exports = {
     themeConfig: {
         docsDir: "pages",
         repo: "mysticatea/tfjs-trial",
-        search: false,
-        sidebar: [
-            "/",
-            {
-                title: "五目並べ",
-                children: [
-                    ["/gomoku/play", "対戦"],
-                    ["/gomoku/selfplay", "自己対戦"],
-                    ["/gomoku/train", "強化学習"],
-                ],
-            },
-        ],
+        sidebar: ["/", "/algorithm", "/gomoku"],
     },
 
     chainWebpack(config) {
